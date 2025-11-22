@@ -1,0 +1,113 @@
+# GitHub Actions Deployment Template
+# Copy this to .github/workflows/deploy.yml in your repository
+# Update the DEPLOY_PATH secret for each application
+
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  deploy:
+    name: Deploy Laravel Application
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DEPLOY_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} << 'ENDSSH'
+            set -e  # Exit on error
+            
+            echo "🚀 Starting deployment..."
+            
+            # Navigate to application directory
+            cd ${DEPLOY_PATH}
+            
+            # Get current commit for logging
+            CURRENT_COMMIT=$(git rev-parse --short HEAD)
+            echo "📦 Deploying commit: ${CURRENT_COMMIT}"
+            
+            # Pull latest changes
+            echo "📥 Pulling latest code..."
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+            
+            # Set ownership
+            echo "🔐 Setting permissions..."
+            sudo chown -R www-data:www-data ${DEPLOY_PATH}
+            sudo find ${DEPLOY_PATH} -type d -exec chmod 755 {} \;
+            sudo find ${DEPLOY_PATH} -type f -exec chmod 644 {} \;
+            
+            # Install/update Composer dependencies
+            echo "📦 Installing Composer dependencies..."
+            sudo -u www-data composer install --no-dev --optimize-autoloader --no-interaction
+            
+            # Install/update npm dependencies (if package.json exists)
+            if [ -f "package.json" ]; then
+              echo "📦 Installing npm dependencies..."
+              sudo -u www-data npm ci --prefer-offline --no-audit
+              
+              echo "🏗️  Building frontend assets..."
+              sudo -u www-data npm run build
+            fi
+            
+            # Run database migrations
+            echo "🗄️  Running database migrations..."
+            sudo -u www-data php artisan migrate --force --no-interaction
+            
+            # Clear and cache configuration
+            echo "🧹 Clearing caches..."
+            sudo -u www-data php artisan config:clear
+            sudo -u www-data php artisan cache:clear
+            sudo -u www-data php artisan route:clear
+            sudo -u www-data php artisan view:clear
+            
+            echo "💾 Caching configuration..."
+            sudo -u www-data php artisan config:cache
+            sudo -u www-data php artisan route:cache
+            sudo -u www-data php artisan view:cache
+            
+            # Set Laravel-specific permissions
+            echo "🔐 Setting Laravel permissions..."
+            sudo chmod -R 775 storage bootstrap/cache
+            
+            # Restart PHP-FPM (adjust version as needed)
+            echo "🔄 Restarting PHP-FPM..."
+            sudo systemctl restart php8.2-fpm || sudo systemctl restart php8.1-fpm
+            
+            # Reload Nginx
+            echo "🔄 Reloading Nginx..."
+            sudo systemctl reload nginx
+            
+            echo "✅ Deployment completed successfully!"
+            echo "📝 Commit: ${CURRENT_COMMIT}"
+          ENDSSH
+
+      - name: Deployment success
+        if: success()
+        run: echo "✅ Deployment completed successfully!"
+
+      - name: Deployment failure
+        if: failure()
+        run: |
+          echo "❌ Deployment failed! Check the logs above."
+          exit 1
+
