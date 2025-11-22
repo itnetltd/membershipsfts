@@ -9,14 +9,13 @@ on:
     branches:
       - main
       - master
-      - ui-enhancements
   workflow_dispatch: # Allows manual trigger from GitHub UI
 
 jobs:
   deploy:
     name: Deploy Laravel Application
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -46,16 +45,16 @@ jobs:
             CURRENT_COMMIT=$(git rev-parse --short HEAD)
             echo "📦 Deploying commit: ${CURRENT_COMMIT}"
             
-            # Pull latest changes# Pull latest changes
+            # Pull latest changes
             echo "📥 Pulling latest code..."
             # Temporarily give deploy user write access for git operations
             sudo chown -R deploy:www-data ${DEPLOY_PATH}
             sudo chmod -R 775 ${DEPLOY_PATH}
-   
+            
             # Now perform git operations
             git fetch origin
             git reset --hard origin/main || git reset --hard origin/master
-   
+            
             # Set ownership back to www-data for web server
             echo "🔐 Setting permissions..."
             sudo chown -R www-data:www-data ${DEPLOY_PATH}
@@ -118,4 +117,3 @@ jobs:
         run: |
           echo "❌ Deployment failed! Check the logs above."
           exit 1
-
