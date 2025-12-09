@@ -1,4 +1,4 @@
-{{-- resources/views/dashboard.blade.php --}}
+{{-- resources/views/dashboard.blade.php --}}  
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-slate-800 leading-tight">
@@ -14,50 +14,90 @@
                 <div class="px-6 py-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
                         <div class="text-sm font-semibold text-slate-500 uppercase tracking-[0.18em]">
-                            Shoot For The Stars · Membership
+                            Shoot For The Stars · Festive Camp
                         </div>
                         <h3 class="mt-1 text-xl font-semibold text-slate-900">
                             Welcome, {{ Str::headline(auth()->user()->name ?? 'Coach/Parent') }}.
                         </h3>
                         <p class="mt-2 text-sm text-slate-600 max-w-xl">
-                            Manage your child’s basketball membership, player profile, payments and documents
-                            for the Shoot For The Stars youth academy.
+                            Register your child for the X-Mas & New Year Festive Camp at Green Hills Academy Indoor Gymnasium
+                            and follow up their spot and payment status.
                         </p>
                     </div>
 
                     <div class="flex items-center gap-3">
                         <a
-                            href="{{ route('application.create') }}"
-                            class="inline-flex items-center px-5 py-2.5 rounded-lg bg-slate-900 text-white text-sm font-medium shadow-sm hover:bg-slate-800 transition"
+                            href="{{ route('festive-camp.register') }}"
+                            class="inline-flex items-center px-5 py-2.5 rounded-lg bg-yellow-400 text-slate-950 text-sm font-medium shadow-sm hover:bg-yellow-300 transition"
                         >
-                            Start / Continue Player Registration
+                            Register for Festive Camp
                         </a>
                     </div>
+
                 </div>
             </div>
 
             {{-- 4 key cards row --}}
             <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
 
-                {{-- Player Application --}}
+                {{-- Festive Camp Registration (repurposed from Player Application) --}}
+                @php
+                    $festiveCount    = $festiveCount ?? 0;
+                    $festiveApproved = $festiveApproved ?? 0;
+                    $hasFestive      = $festiveCount > 0;
+                @endphp
+
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-3">
                         <div class="font-semibold text-slate-900 text-sm">
-                            Player Registration
+                            Festive Camp Registration
                         </div>
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
-                            {{-- Replace with real status later --}}
-                            Not started
-                        </span>
+
+                        @if($hasFestive)
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                Registered · {{ $festiveCount }} kid{{ $festiveCount > 1 ? 's' : '' }}
+                            </span>
+                        @else
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+                                Not registered yet
+                            </span>
+                        @endif
                     </div>
+
                     <p class="text-sm text-slate-600">
-                        Create or update your player’s profile with age category, venue, jersey number and contact details.
+                        Sign up your player for the 15 Dec 2025 – 2 Jan 2026 festive camp (Mon, Wed & Fri · 10:00–12:00)
+                        at Green Hills Academy Indoor Gymnasium.
                     </p>
-                    <div class="mt-4">
-                        <a href="{{ route('application.create') }}" class="text-xs font-medium text-slate-900 hover:underline">
-                            Manage player profile
-                        </a>
-                    </div>
+
+                    @if($hasFestive)
+                        <div class="mt-4 space-y-1 text-xs text-slate-600">
+                            <p>
+                                Approved registrations:
+                                <span class="font-semibold text-slate-900">{{ $festiveApproved }}</span>
+                            </p>
+                            <p class="text-slate-500">
+                                Approved kids can download a receipt to present at the camp.
+                            </p>
+                        </div>
+
+                        <div class="mt-4 flex flex-col gap-1">
+                            <a href="{{ route('festive-camp.my') }}"
+                               class="text-xs font-medium text-slate-900 hover:underline">
+                                View registrations & receipts
+                            </a>
+                            <a href="{{ route('festive-camp.register') }}"
+                               class="text-[11px] font-medium text-slate-600 hover:underline">
+                                + Register another kid
+                            </a>
+                        </div>
+                    @else
+                        <div class="mt-4">
+                            <a href="{{ route('festive-camp.register') }}"
+                               class="text-xs font-medium text-slate-900 hover:underline">
+                                Manage Festive Camp registration
+                            </a>
+                        </div>
+                    @endif
                 </div>
 
                 {{-- Documents --}}
@@ -103,7 +143,7 @@
                         </span>
                     </div>
                     <p class="text-sm text-slate-600">
-                        Track monthly membership fees, see balances, and view payment history for each player and program.
+                        Track camp or membership payments, see balances, and view payment history once payment tracking is enabled.
                     </p>
                     <div class="mt-4 text-xs text-slate-500 flex items-center gap-2">
                         <span class="h-1.5 w-1.5 rounded-full bg-yellow-400"></span>

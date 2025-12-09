@@ -1,4 +1,4 @@
-<?php
+<?php  
 
 use Illuminate\Support\Facades\Route;
 
@@ -24,14 +24,37 @@ use App\Http\Controllers\Webhook\FlutterwaveWebhookController;
 use App\Http\Controllers\Webhook\MtnMomoWebhookController;
 
 /* -----------------------------
+|  Festive Camp
+|------------------------------*/
+use App\Http\Controllers\FestiveCampController;
+use App\Models\FestiveCampRegistration;   // 🔹 add this line
+
+/* -----------------------------
 |  Landing / Dashboard
 |------------------------------*/
 Route::get('/', function () {
-    return view('welcome');
+    // Festive camp capacity + remaining spots for the welcome page
+    $campCapacity = 100;
+
+    // For now: fixed "20 spots remaining". Later you can compute from DB.
+    $remaining_spots = 20;
+
+    return view('welcome', compact('remaining_spots', 'campCapacity'));
 });
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    $userId = auth()->id();
+
+    $festiveCount    = 0;
+    $festiveApproved = 0;
+
+    if ($userId) {
+        $regs = FestiveCampRegistration::where('user_id', $userId)->get();
+        $festiveCount    = $regs->count();
+        $festiveApproved = $regs->where('status', 'approved')->count();
+    }
+
+    return view('dashboard', compact('festiveCount', 'festiveApproved'));
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 /* -----------------------------
@@ -39,11 +62,36 @@ Route::get('/dashboard', function () {
 |------------------------------*/
 Route::middleware('auth')->group(function () {
 
-    // Profile
+    // Profile (for all logged in users: parents & admins)
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    /* -------------------------
+    |  Festive Camp (parent area)
+    |--------------------------*/
+    Route::get('/festive-camp/register', [FestiveCampController::class, 'create'])
+        ->name('festive-camp.register');
+
+    Route::post('/festive-camp/register', [FestiveCampController::class, 'store'])
+        ->name('festive-camp.store');
+
+    // Parent view of their own festive camp registrations (can be multiple kids)
+    Route::get('/festive-camp/my', [FestiveCampController::class, 'my'])
+        ->name('festive-camp.my');
+
+    // ✅ Printable receipt for a specific festive camp registration
+    Route::get('/festive-camp/{registration}/receipt', [FestiveCampController::class, 'receipt'])
+        ->name('festive-camp.receipt');
+
+    // ✅ QR code image for a specific festive camp registration (used on receipt)
+    Route::get('/festive-camp/{registration}/qr', [FestiveCampController::class, 'qr'])
+        ->name('festive-camp.qr');
+
+    /* -------------------------
+    |  Regular Membership – TEMPORARILY DISABLED
+    |--------------------------*/
+    /*
     // Applications (create/submit/view)
     Route::get('/application', [ApplicationController::class, 'create'])->name('application.create');
     Route::post('/application', [ApplicationController::class, 'store'])->name('application.store');
@@ -65,17 +113,22 @@ Route::middleware('auth')->group(function () {
     // Optional return url (used by card/other providers)
     Route::get('/billing/callback', [PaymentController::class, 'callback'])
         ->name('payments.callback');
+    */
 });
 
+/* ✅ Public verification route – used when scanning QR code on receipt */
+Route::get('/festive-camp/verify/{token}', [FestiveCampController::class, 'verify'])
+    ->name('festive-camp.verify');
+
 /* -----------------------------
-|  Admin area
+|  Admin area (dashboard)
 |------------------------------*/
 Route::middleware(['auth', 'admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
 
-        // Applications
+        // Applications (admin)
         Route::get('/applications', [AdminApplicationController::class, 'index'])->name('apps.index');
         Route::get('/applications/{app}', [AdminApplicationController::class, 'show'])->name('apps.show');
         Route::post('/applications/{app}/approve', [AdminApplicationController::class, 'approve'])->name('apps.approve');
@@ -91,6 +144,14 @@ Route::middleware(['auth', 'admin'])
         Route::get('/payments/export', [AdminPaymentController::class, 'export'])->name('payments.export');
         Route::get('/payments/{payment}', [AdminPaymentController::class, 'show'])->name('payments.show');
         Route::post('/payments/{payment}/status', [AdminPaymentController::class, 'updateStatus'])->name('payments.updateStatus');
+
+        // Festive camp campers list (admin view)
+        Route::get('/festive-camp', [FestiveCampController::class, 'index'])
+            ->name('festive-camp.index');
+
+        // Approve a festive camp registration
+        Route::post('/festive-camp/{registration}/approve', [FestiveCampController::class, 'approve'])
+            ->name('festive-camp.approve');
     });
 
 /* -----------------------------

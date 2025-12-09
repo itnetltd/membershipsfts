@@ -1,4 +1,4 @@
-<nav x-data="{ open: false }" class="bg-slate-950 border-b border-slate-800 text-white">
+<nav x-data="{ open: false }" class="bg-slate-950 border-b border-slate-800 text-white"> 
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
@@ -23,19 +23,29 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
+                    {{-- FESTIVE CAMP: main user action --}}
+                    <x-nav-link :href="route('festive-camp.register')" :active="request()->routeIs('festive-camp.*')"
+                                class="text-slate-100 hover:text-yellow-300">
+                        {{ __('Festive Camp Registration') }}
+                    </x-nav-link>
+
+                    {{-- TEMPORARILY DISABLED: My Application (normal membership)
                     <x-nav-link :href="route('application.create')" :active="request()->routeIs('application.*')"
                                 class="text-slate-100 hover:text-yellow-300">
                         {{ __('My Application') }}
                     </x-nav-link>
+                    --}}
 
                     {{-- Member: Billing (show only to NON-admins) --}}
                     @auth
                         @php $isAdmin = auth()->user()?->is_admin ?? false; @endphp
                         @unless($isAdmin)
+                            {{-- TEMPORARILY DISABLED: normal billing for membership
                             <x-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')"
                                         class="text-slate-100 hover:text-yellow-300">
                                 {{ __('Billing') }}
                             </x-nav-link>
+                            --}}
                         @endunless
                     @endauth
 
@@ -49,6 +59,11 @@
                             <x-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')"
                                         class="text-slate-100 hover:text-yellow-300">
                                 {{ __('Admin: Payments') }}
+                            </x-nav-link>
+                            {{-- Admin view of festive camp campers --}}
+                            <x-nav-link :href="route('admin.festive-camp.index')" :active="request()->routeIs('admin.festive-camp.*')"
+                                        class="text-slate-100 hover:text-yellow-300">
+                                {{ __('Admin: Festive Camp') }}
                             </x-nav-link>
                         @endif
                     @endauth
@@ -119,17 +134,26 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
+            {{-- FESTIVE CAMP: main action on mobile --}}
+            <x-responsive-nav-link :href="route('festive-camp.register')" :active="request()->routeIs('festive-camp.*')">
+                {{ __('Festive Camp Registration') }}
+            </x-responsive-nav-link>
+
+            {{-- TEMPORARILY DISABLED: My Application
             <x-responsive-nav-link :href="route('application.create')" :active="request()->routeIs('application.*')">
                 {{ __('My Application') }}
             </x-responsive-nav-link>
+            --}}
 
             {{-- Member: Billing (only non-admins) --}}
             @auth
                 @php $isAdmin = auth()->user()?->is_admin ?? false; @endphp
                 @unless($isAdmin)
+                    {{-- TEMPORARILY DISABLED: normal billing
                     <x-responsive-nav-link :href="route('payments.index')" :active="request()->routeIs('payments.*')">
                         {{ __('Billing') }}
                     </x-responsive-nav-link>
+                    --}}
                 @endunless
             @endauth
 
@@ -141,6 +165,9 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.payments.index')" :active="request()->routeIs('admin.payments.*')">
                         {{ __('Admin: Payments') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.festive-camp.index')" :active="request()->routeIs('admin.festive-camp.*')">
+                        {{ __('Admin: Festive Camp') }}
                     </x-responsive-nav-link>
                 @endif
             @endauth

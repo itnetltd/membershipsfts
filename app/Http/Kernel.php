@@ -52,5 +52,7 @@ class Kernel extends HttpKernel
 
         // 👇 your custom middleware
         'admin' => \App\Http\Middleware\AdminOnly::class,
+        'camp.approved' => \App\Http\Middleware\EnsureCampApproved::class,
+
     ];
 }

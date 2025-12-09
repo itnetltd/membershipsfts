@@ -1,4 +1,4 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>  
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
@@ -34,11 +34,17 @@
             </a>
 
             <nav class="flex items-center gap-4 text-sm">
+                {{-- Always allow Festive Camp registration --}}
+                <a href="{{ route('festive-camp.register') }}" class="hover:text-yellow-300 transition">
+                    Festive Camp Registration
+                </a>
+
                 @auth
                     <a href="{{ route('dashboard') }}" class="hover:text-yellow-300 transition">Dashboard</a>
-                    <a href="{{ route('application.create') }}" class="hover:text-yellow-300 transition">
+                    {{-- Temporarily hide normal player registration --}}
+                    {{-- <a href="{{ route('application.create') }}" class="hover:text-yellow-300 transition">
                         My Player Profile
-                    </a>
+                    </a> --}}
                     @if(auth()->user()->is_admin ?? false)
                         <a href="{{ route('admin.apps.index') }}" class="hover:text-yellow-300 transition">
                             Admin
@@ -46,7 +52,8 @@
                     @endif
                 @else
                     <a href="{{ route('login') }}" class="hover:text-yellow-300 transition">Log in</a>
-                    <a href="{{ route('register') }}" class="hover:text-yellow-300 transition">Register</a>
+                    {{-- Disable normal account registration for now --}}
+                    {{-- <a href="{{ route('register') }}" class="hover:text-yellow-300 transition">Register</a> --}}
                 @endauth
             </nav>
         </div>
@@ -54,7 +61,7 @@
 
     <main class="flex-1">
 
-        {{-- HERO --}}
+        {{-- HERO – FESTIVE CAMP FOCUS --}}
         <section class="relative">
             <div class="absolute inset-0 -z-10 opacity-90"
                  style="background:
@@ -65,62 +72,89 @@
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
                 <div class="grid lg:grid-cols-12 gap-10 items-center">
                     <div class="lg:col-span-7">
+                        <p class="text-xs font-semibold uppercase tracking-[0.35em] text-sky-500 mb-2">
+                            X-Mas &amp; New Year Festive Camp
+                        </p>
                         <h1 class="text-3xl sm:text-5xl font-semibold tracking-tight text-slate-900">
-                            Manage Your Child’s
-                            <span class="text-yellow-500">Basketball Membership</span>
-                            in One Place.
+                            Holiday Hoops Camp for
+                            <span class="text-yellow-500">Young Stars</span> in Kigali.
                         </h1>
-                        <p class="mt-5 text-slate-700 max-w-2xl">
-                            Shoot For The Stars Membership Portal helps parents register players, follow payments,
-                            choose age categories, and track their child’s progress in our youth basketball academy –
-                            from U8 to U16.
+                        <p class="mt-4 text-slate-700 max-w-2xl">
+                            From <strong>15 December 2025</strong> to <strong>2 January 2026</strong>, every
+                            <strong>Monday, Wednesday &amp; Friday</strong>, your child will train, play and have fun
+                            with our coaches at <strong>Green Hills Academy Indoor Gymnasium</strong> – from
+                            <strong>10:00 to 12:00</strong>.
+                        </p>
+                        <p class="mt-2 text-sm text-slate-700">
+                            Full camp fee: <span class="font-semibold text-yellow-600">50,000 RWF</span> for the whole festive period.
+                            Payment is done manually via MoMo: <span class="font-mono text-slate-900">07885448596</span>.
                         </p>
 
-                        {{-- Primary CTA --}}
-                        <div class="mt-8">
-                            <a href="{{ route('application.create') }}"
+                        {{-- Primary CTA – ONLY FESTIVE CAMP --}}
+                        <div class="mt-6 flex flex-wrap items-center gap-4">
+                            <a href="{{ route('festive-camp.register') }}"
                                class="inline-flex items-center px-6 py-3 rounded-lg text-slate-950 bg-yellow-400 hover:bg-yellow-300 shadow-soft font-medium">
-                                Register a Player
+                                Register for Festive Camp
                             </a>
+
+                            @isset($remaining_spots, $campCapacity)
+                                <span class="inline-flex items-center px-4 py-2 rounded-full border border-emerald-400/70 bg-emerald-400/10 text-emerald-700 text-xs sm:text-sm font-semibold">
+                                    {{ $remaining_spots }} spots remaining out of {{ $campCapacity }}
+                                </span>
+                            @else
+                                <span class="inline-flex items-center px-4 py-2 rounded-full border border-emerald-400/70 bg-emerald-400/10 text-emerald-700 text-xs sm:text-sm font-semibold">
+                                    20 spots remaining out of 100
+                                </span>
+                            @endisset
                         </div>
 
-                        {{-- Light secondary links --}}
-                        @guest
-                            <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">
-                                <a href="{{ route('login') }}" class="underline hover:text-slate-900">Log in</a>
-                                <span class="text-slate-400">•</span>
-                                <a href="{{ route('register') }}" class="underline hover:text-slate-900">Create parent account</a>
-                            </div>
-                        @endguest
+                        <p class="mt-4 text-xs sm:text-sm text-slate-600">
+                            Fun drills, games, mini-tournaments, and a positive environment to finish the year strong
+                            and start the new year with energy. Boys and girls from U8 to U16 are welcome.
+                        </p>
+
+                        {{-- Normal membership temporarily disabled message (optional) --}}
+                        <p class="mt-3 text-xs text-slate-500">
+                            Note: Regular academy membership registration is temporarily paused. We are currently
+                            registering <strong>Festive Camp participants only</strong>.
+                        </p>
                     </div>
 
-                    {{-- Compact card --}}
+                    {{-- Compact card – Camp snapshot --}}
                     <div class="lg:col-span-5">
                         <div class="bg-white rounded-xl shadow-soft p-6 border border-slate-100">
                             <div class="flex items-center gap-3">
                                 <img src="{{ asset('images/sfts-logo.png') }}" class="h-9 w-9 rounded-full bg-slate-900" alt="Shoot For The Stars">
                                 <div class="font-medium">
-                                    Shoot For The Stars Basketball Academy
-                                    <div class="text-xs text-slate-500">Youth Membership Portal</div>
+                                    Festive Basketball Camp 2025–2026
+                                    <div class="text-xs text-slate-500">Shoot For The Stars Basketball Academy</div>
                                 </div>
                             </div>
                             <ul class="mt-5 space-y-2 text-slate-700 text-sm">
                                 <li class="flex items-center gap-2">
                                     <span class="h-2 w-2 bg-yellow-400 rounded-full"></span>
-                                    Player categories: U8, U10, U12, U14, U16.
+                                    Dates: 15 December 2025 – 2 January 2026.
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <span class="h-2 w-2 bg-sky-400 rounded-full"></span>
-                                    Programs: Practice only, Full Program + Game Day, Shooting Clinics.
+                                    Days: Monday, Wednesday &amp; Friday • Time: 10:00 – 12:00.
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <span class="h-2 w-2 bg-emerald-400 rounded-full"></span>
-                                    Track monthly payments, balances, and active memberships.
+                                    Venue: Green Hills Academy Indoor Gymnasium.
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="h-2 w-2 bg-purple-400 rounded-full"></span>
+                                    Age groups: U8, U10, U12, U14, U16 (boys &amp; girls).
+                                </li>
+                                <li class="flex items-center gap-2">
+                                    <span class="h-2 w-2 bg-rose-400 rounded-full"></span>
+                                    Fee: 50,000 RWF · MoMo: 07885448596 (manual payment, approval after confirmation).
                                 </li>
                             </ul>
-                            <a href="{{ route('application.create') }}"
+                            <a href="{{ route('festive-camp.register') }}"
                                class="mt-6 w-full inline-flex justify-center px-4 py-2.5 rounded-lg bg-slate-900 text-white hover:bg-slate-800 text-sm font-medium">
-                               Start Player Registration
+                               Go to Festive Camp Registration Form
                             </a>
                         </div>
                     </div>
@@ -128,38 +162,38 @@
             </div>
         </section>
 
-        {{-- FEATURES --}}
+        {{-- FEATURES – Fun & exciting for the camp --}}
         <section class="py-12">
             <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-soft">
                         <div class="flex items-center gap-2 text-slate-900 font-semibold">
                             <span class="h-2.5 w-2.5 rounded-full bg-yellow-400"></span>
-                            Online Player Registration
+                            Holiday Hoops Fun
                         </div>
                         <p class="mt-2 text-slate-600 text-sm">
-                            Register new players for the academy, select age category and venue,
-                            and keep all player details in one secure profile.
+                            High-energy sessions with fun drills, shooting games and friendly competitions to keep
+                            kids active during the festive season.
                         </p>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-soft">
                         <div class="flex items-center gap-2 text-slate-900 font-semibold">
                             <span class="h-2.5 w-2.5 rounded-full bg-sky-400"></span>
-                            Membership Payments
+                            Skills & Confidence
                         </div>
                         <p class="mt-2 text-slate-600 text-sm">
-                            Record monthly fees, see payment status, and monitor outstanding balances
-                            for each player and program.
+                            Focus on ball handling, footwork, finishing and game understanding – helping young players
+                            grow in skills and confidence.
                         </p>
                     </div>
                     <div class="bg-white rounded-xl border border-slate-100 p-6 shadow-soft">
                         <div class="flex items-center gap-2 text-slate-900 font-semibold">
                             <span class="h-2.5 w-2.5 rounded-full bg-emerald-400"></span>
-                            Teams & Categories
+                            Safe Indoor Environment
                         </div>
                         <p class="mt-2 text-slate-600 text-sm">
-                            View which team and category each player belongs to, and keep track of
-                            active programs like practices, games, and clinics.
+                            Indoor gym at Green Hills Academy – safe, weather-proof and supervised by experienced
+                            Shoot For The Stars coaching staff.
                         </p>
                     </div>
                 </div>
@@ -174,7 +208,11 @@
             <span>© {{ date('Y') }} Shoot For The Stars Basketball Academy</span>
             <span class="flex items-center gap-2">
                 <span class="h-2 w-2 rounded-full bg-yellow-400"></span>
-                <span>Youth basketball membership &amp; player management portal</span>
+                <span>Youth basketball membership &amp; player management portal<a href="https://wa.me/250788448596?text=Hello%20IT%20NET%20Ltd%2C%20I%20need%20support." 
+   target="_blank" 
+   class="hover:underline">
+    Developed by IT NET Ltd
+</a></span>
             </span>
         </div>
     </footer>
