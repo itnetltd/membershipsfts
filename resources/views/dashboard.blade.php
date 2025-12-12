@@ -1,4 +1,4 @@
-{{-- resources/views/dashboard.blade.php --}}  
+{{-- resources/views/dashboard.blade.php --}}
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-semibold text-xl text-slate-800 leading-tight">
@@ -47,18 +47,18 @@
                     $hasFestive      = $festiveCount > 0;
                 @endphp
 
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-3">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col justify-between overflow-hidden">
+                    <div class="flex items-center justify-between mb-3 gap-3">
                         <div class="font-semibold text-slate-900 text-sm">
                             Festive Camp Registration
                         </div>
 
                         @if($hasFestive)
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
                                 Registered · {{ $festiveCount }} kid{{ $festiveCount > 1 ? 's' : '' }}
                             </span>
                         @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 shrink-0">
                                 Not registered yet
                             </span>
                         @endif
@@ -80,13 +80,28 @@
                             </p>
                         </div>
 
-                        <div class="mt-4 flex flex-col gap-1">
+                        {{-- ✅ Highlighted CTA (fixed: no overflow / no overlap) --}}
+                        <div class="mt-4 space-y-2">
+                            <div class="max-w-full inline-flex items-center gap-2 text-[11px] font-semibold
+                                        text-emerald-700 bg-emerald-50 border border-emerald-200
+                                        px-3 py-1 rounded-full">
+                                <span class="shrink-0">Important</span>
+                                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0"></span>
+                                <span class="truncate">Receipts available after approval</span>
+                            </div>
+
                             <a href="{{ route('festive-camp.my') }}"
-                               class="text-xs font-medium text-slate-900 hover:underline">
-                                View registrations & receipts
+                               class="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl
+                                      bg-emerald-600 text-white font-semibold text-sm shadow
+                                      hover:bg-emerald-500 focus:outline-none focus:ring-4 focus:ring-emerald-200 transition">
+                                <span class="text-center leading-tight">View registrations &amp; receipts</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 opacity-95" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
                             </a>
+
                             <a href="{{ route('festive-camp.register') }}"
-                               class="text-[11px] font-medium text-slate-600 hover:underline">
+                               class="text-[12px] font-medium text-slate-700 hover:underline">
                                 + Register another kid
                             </a>
                         </div>
@@ -147,7 +162,7 @@
                     </p>
                     <div class="mt-4 text-xs text-slate-500 flex items-center gap-2">
                         <span class="h-1.5 w-1.5 rounded-full bg-yellow-400"></span>
-                        <span>Mobile Money & card payment integration planned.</span>
+                        <span>Mobile Money &amp; card payment integration planned.</span>
                     </div>
                 </div>
 
@@ -155,7 +170,7 @@
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-3">
                         <div class="font-semibold text-slate-900 text-sm">
-                            Teams & Programs
+                            Teams &amp; Programs
                         </div>
                         <div class="text-xs text-slate-500">
                             SFTS Academy
@@ -168,7 +183,7 @@
                     <div class="mt-4">
                         <a href="#"
                            class="text-xs font-medium text-slate-900 hover:underline">
-                            View teams & categories
+                            View teams &amp; categories
                         </a>
                     </div>
                 </div>
