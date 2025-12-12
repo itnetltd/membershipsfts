@@ -87,7 +87,7 @@
                         </p>
                         <p class="mt-2 text-sm text-slate-700">
                             Full camp fee: <span class="font-semibold text-yellow-600">50,000 RWF</span> for the whole festive period.
-                            Names(Mugunga Louis)Payment is done manually via MoMo: <span class="font-mono text-slate-900">0788448596</span>.
+                            NamesPayment is done manually via MoMo(Mugunga Louis): <span class="font-mono text-slate-900">0788448596</span>.
                         </p>
 
                         {{-- Primary CTA – ONLY FESTIVE CAMP --}}
