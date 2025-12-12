@@ -149,7 +149,7 @@
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <span class="h-2 w-2 bg-rose-400 rounded-full"></span>
-                                    Fee: 50,000 RWF · MoMo: 07885448596 (manual payment, approval after confirmation).
+                                    Fee: 50,000 RWF · MoMo: 0788448596 (manual payment, approval after confirmation).
                                 </li>
                             </ul>
                             <a href="{{ route('festive-camp.register') }}"
