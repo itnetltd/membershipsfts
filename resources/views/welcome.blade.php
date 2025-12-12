@@ -110,7 +110,7 @@
 
                         <p class="mt-4 text-xs sm:text-sm text-slate-600">
                             Fun drills, games, mini-tournaments, and a positive environment to finish the year strong
-                            and start the new year with energy. Boys and girls from U8 to U16 are welcome.
+                            and start the new year with energy. Boys and girls from 4 to 16 Years old are welcome.
                         </p>
 
                         {{-- Normal membership temporarily disabled message (optional) --}}
@@ -145,7 +145,7 @@
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <span class="h-2 w-2 bg-purple-400 rounded-full"></span>
-                                    Age groups: U8, U10, U12, U14, U16 (boys &amp; girls).
+                                    Age groups: 4-7, U8, U10, U12, U14, U16 (boys &amp; girls).
                                 </li>
                                 <li class="flex items-center gap-2">
                                     <span class="h-2 w-2 bg-rose-400 rounded-full"></span>
