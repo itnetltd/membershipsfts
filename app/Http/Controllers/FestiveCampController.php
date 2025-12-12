@@ -66,7 +66,7 @@ class FestiveCampController extends Controller
 
         return redirect()
             ->route('festive-camp.my')
-            ->with('success', 'Registration submitted! Please pay 50,000 RWF to MoMo 07885448596. We will approve your spot after confirming payment.');
+            ->with('success', 'Registration submitted! Please pay 50,000 RWF to MoMo 0788448596. We will approve your spot after confirming payment.');
     }
 
     /**
