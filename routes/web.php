@@ -27,19 +27,25 @@ use App\Http\Controllers\Webhook\MtnMomoWebhookController;
 |  Festive Camp
 |------------------------------*/
 use App\Http\Controllers\FestiveCampController;
-use App\Models\FestiveCampRegistration;   // 🔹 add this line
+use App\Models\FestiveCampRegistration;   // kept for future reuse
 
 /* -----------------------------
 |  Landing / Dashboard
 |------------------------------*/
 Route::get('/', function () {
+    /*
     // Festive camp capacity + remaining spots for the welcome page
-    $campCapacity = 100;
+    $campCapacity = 150;
 
-    // For now: fixed "20 spots remaining". Later you can compute from DB.
-    $remaining_spots = 20;
+    // Dynamic remaining spots based on current registrations
+    $registered      = FestiveCampRegistration::count();
+    $remaining_spots = max($campCapacity - $registered, 0);
 
     return view('welcome', compact('remaining_spots', 'campCapacity'));
+    */
+
+    // ✅ Temporarily deactivated – simple welcome view
+    return view('welcome');
 });
 
 Route::get('/dashboard', function () {

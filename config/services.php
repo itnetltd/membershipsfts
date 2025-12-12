@@ -48,6 +48,13 @@ return [
         'target_environment'  => env('MOMO_TARGET_ENV', 'sandbox'),
         'callback_url'        => env('MOMO_CALLBACK_URL', 'https://example.com/momo/callback'),
     ],
+
+    'whatsapp' => [
+    'enabled'          => env('WHATSAPP_ENABLED', false),
+    'access_token'     => env('WHATSAPP_ACCESS_TOKEN'),
+    'phone_number_id'  => env('WHATSAPP_PHONE_NUMBER_ID'),
+],
+
 ];
 
 

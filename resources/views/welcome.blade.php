@@ -103,7 +103,7 @@
                                 </span>
                             @else
                                 <span class="inline-flex items-center px-4 py-2 rounded-full border border-emerald-400/70 bg-emerald-400/10 text-emerald-700 text-xs sm:text-sm font-semibold">
-                                    20 spots remaining out of 100
+                                    Few spots remaining
                                 </span>
                             @endisset
                         </div>

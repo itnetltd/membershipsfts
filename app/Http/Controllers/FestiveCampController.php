@@ -6,9 +6,20 @@ use App\Models\FestiveCampRegistration;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
+use App\Services\WhatsAppService;
 
 class FestiveCampController extends Controller
 {
+    /**
+     * WhatsApp service for notifications
+     */
+    protected WhatsAppService $whatsApp;
+
+    public function __construct(WhatsAppService $whatsApp)
+    {
+        $this->whatsApp = $whatsApp;
+    }
+
     /**
      * Show registration form (for logged-in parent)
      */
@@ -47,7 +58,11 @@ class FestiveCampController extends Controller
         $data['status']             = 'pending';
         $data['verification_token'] = Str::uuid()->toString();   // ✅ important for QR
 
-        FestiveCampRegistration::create($data);
+        // Save registration
+        $registration = FestiveCampRegistration::create($data);
+
+        // ✅ WhatsApp confirmation to parent (if WhatsApp is enabled & phone is valid)
+        $this->whatsApp->sendRegistrationConfirmation($registration);
 
         return redirect()
             ->route('festive-camp.my')
@@ -176,6 +191,9 @@ class FestiveCampController extends Controller
     {
         $registration->status = 'approved';
         $registration->save();
+
+        // ✅ WhatsApp receipt link to parent
+        $this->whatsApp->sendApprovalReceipt($registration);
 
         return back()->with(
             'success',
