@@ -86,6 +86,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/festive-camp/my', [FestiveCampController::class, 'my'])
         ->name('festive-camp.my');
 
+    // ✅ NEW: Edit & update registration (parent can correct mistakes)
+    Route::get('/festive-camp/{registration}/edit', [FestiveCampController::class, 'edit'])
+        ->name('festive-camp.edit');
+
+    Route::put('/festive-camp/{registration}', [FestiveCampController::class, 'update'])
+        ->name('festive-camp.update');
+
+    // ✅ NEW: Delete registration (parent can remove wrong entry)
+    Route::delete('/festive-camp/{registration}', [FestiveCampController::class, 'destroy'])
+        ->name('festive-camp.destroy');
+
     // ✅ Printable receipt for a specific festive camp registration
     Route::get('/festive-camp/{registration}/receipt', [FestiveCampController::class, 'receipt'])
         ->name('festive-camp.receipt');
@@ -158,6 +169,10 @@ Route::middleware(['auth', 'admin'])
         // Approve a festive camp registration
         Route::post('/festive-camp/{registration}/approve', [FestiveCampController::class, 'approve'])
             ->name('festive-camp.approve');
+
+        // ✅ FIX: Amount paid update route (admin only)
+        Route::patch('/festive-camp/{registration}/amount', [FestiveCampController::class, 'updateAmount'])
+            ->name('festive-camp.amount');
     });
 
 /* -----------------------------

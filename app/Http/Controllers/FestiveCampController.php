@@ -21,11 +21,42 @@ class FestiveCampController extends Controller
     }
 
     /**
+     * Small helper: parent must own the registration OR be admin.
+     */
+    protected function authorizeOwnerOrAdmin(FestiveCampRegistration $registration): array
+    {
+        $user = auth()->user();
+        if (! $user) {
+            abort(403);
+        }
+
+        $isAdmin = (bool) ($user->is_admin ?? false);
+
+        if (! $isAdmin && (int) $registration->user_id !== (int) $user->id) {
+            abort(403);
+        }
+
+        return [$user, $isAdmin];
+    }
+
+    /**
+     * Small helper: admin only.
+     */
+    protected function authorizeAdmin(): void
+    {
+        $user = auth()->user();
+        $isAdmin = (bool) ($user->is_admin ?? false);
+
+        if (! $user || ! $isAdmin) {
+            abort(403);
+        }
+    }
+
+    /**
      * Show registration form (for logged-in parent)
      */
     public function create()
     {
-        // Last registration by this user (can be used to prefill some fields if needed)
         $existing = FestiveCampRegistration::where('user_id', auth()->id())
             ->latest()
             ->first();
@@ -56,12 +87,12 @@ class FestiveCampController extends Controller
         $data['user_id']            = auth()->id();
         $data['payment_method']     = 'MoMo';
         $data['status']             = 'pending';
-        $data['verification_token'] = Str::uuid()->toString();   // ✅ important for QR
+        $data['verification_token'] = Str::uuid()->toString(); // important for QR
 
         // Save registration
         $registration = FestiveCampRegistration::create($data);
 
-        // ✅ WhatsApp confirmation to parent (if WhatsApp is enabled & phone is valid)
+        // WhatsApp confirmation to parent
         $this->whatsApp->sendRegistrationConfirmation($registration);
 
         return redirect()
@@ -82,23 +113,90 @@ class FestiveCampController extends Controller
     }
 
     /**
+     * Parent: edit a registration (only if pending)
+     */
+    public function edit(FestiveCampRegistration $registration)
+    {
+        [$user, $isAdmin] = $this->authorizeOwnerOrAdmin($registration);
+
+        // Keep integrity: do not allow edits after approval (unless you want admin to edit later)
+        if (! $isAdmin && $registration->status === 'approved') {
+            return redirect()
+                ->route('festive-camp.my')
+                ->with('error', 'This registration is already approved and cannot be edited.');
+        }
+
+        return view('festive-camp.edit', compact('registration'));
+    }
+
+    /**
+     * Parent: update a registration (only if pending)
+     */
+    public function update(Request $request, FestiveCampRegistration $registration)
+    {
+        [$user, $isAdmin] = $this->authorizeOwnerOrAdmin($registration);
+
+        if (! $isAdmin && $registration->status === 'approved') {
+            return redirect()
+                ->route('festive-camp.my')
+                ->with('error', 'This registration is already approved and cannot be edited.');
+        }
+
+        $data = $request->validate([
+            'player_name'       => 'required|string|max:255',
+            'age'               => 'nullable|integer|min:4|max:18',
+            'category'          => 'nullable|string|max:50',
+            'school'            => 'nullable|string|max:255',
+            'location'          => 'nullable|string|max:255',
+            'guardian_name'     => 'required|string|max:255',
+            'guardian_phone'    => 'required|string|max:50',
+            'guardian_email'    => 'nullable|email|max:255',
+            'payment_phone'     => 'nullable|string|max:50',
+            'payment_reference' => 'nullable|string|max:255',
+            'notes'             => 'nullable|string',
+        ]);
+
+        // Preserve these server-controlled fields:
+        unset($data['user_id'], $data['status'], $data['payment_method'], $data['verification_token']);
+
+        $registration->update($data);
+
+        return redirect()
+            ->route('festive-camp.my')
+            ->with('success', 'Registration updated successfully.');
+    }
+
+    /**
+     * Parent: delete a registration (only if pending)
+     */
+    public function destroy(FestiveCampRegistration $registration)
+    {
+        [$user, $isAdmin] = $this->authorizeOwnerOrAdmin($registration);
+
+        if (! $isAdmin && $registration->status === 'approved') {
+            return redirect()
+                ->route('festive-camp.my')
+                ->with('error', 'Approved registrations cannot be deleted.');
+        }
+
+        $player = $registration->player_name;
+
+        $registration->delete();
+
+        return redirect()
+            ->route('festive-camp.my')
+            ->with('success', 'Registration for ' . $player . ' has been deleted.');
+    }
+
+    /**
      * Printable receipt for one registration
      * (parent must own it OR be admin)
      */
     public function receipt(FestiveCampRegistration $registration)
     {
-        $user = auth()->user();
-        if (! $user) {
-            abort(403);
-        }
+        [$user, $isAdmin] = $this->authorizeOwnerOrAdmin($registration);
 
-        $isAdmin = $user->is_admin ?? false;
-
-        if (! $isAdmin && $registration->user_id !== $user->id) {
-            abort(403);
-        }
-
-        // Fixed festive camp fee
+        // Default festive camp fee (used if amount_paid is empty)
         $campFee = 50000;
 
         return view('festive-camp.receipt', [
@@ -113,19 +211,17 @@ class FestiveCampController extends Controller
      */
     public function qr(FestiveCampRegistration $registration)
     {
-        // Safety: ensure the library is available
         if (! class_exists(\SimpleSoftwareIO\QrCode\Generator::class)) {
             abort(500, 'QR library not installed. Run: composer require simplesoftwareio/simple-qrcode "^4.4"');
         }
 
-        // Ensure we have a verification token
         if (empty($registration->verification_token)) {
             $registration->verification_token = Str::uuid()->toString();
             $registration->save();
         }
 
-        // URL encoded inside the QR
-        $verifyUrl = route('festive-camp.verify', $registration->verification_token);
+        // absolute URL (better for production / https)
+        $verifyUrl = url()->route('festive-camp.verify', $registration->verification_token, true);
 
         $png = QrCode::format('png')
             ->size(320)
@@ -158,13 +254,21 @@ class FestiveCampController extends Controller
         $other      = FestiveCampRegistration::whereNotIn('status', ['approved', 'pending'])->count();
         $remaining  = max($capacity - $registered, 0);
 
-        // Money (fixed fee per kid)
-        $campFee       = 50000; // RWF per child
-        $expectedTotal = $registered * $campFee;                 // all registered
-        $paidAmount    = $approved   * $campFee;                 // approved = paid
-        $unpaidAmount  = ($registered - $approved) * $campFee;   // pending + other
+        // Default fee per kid
+        $campFee = 50000;
 
-        // List of campers for the table
+        // Expected total = all registered * default fee
+        $expectedTotal = $registered * $campFee;
+
+        // Paid amount = SUM(amount_paid) for approved; fallback to approved*fee
+        $paidAmount = (int) FestiveCampRegistration::where('status', 'approved')->sum('amount_paid');
+        if ($paidAmount <= 0) {
+            $paidAmount = $approved * $campFee;
+        }
+
+        $unpaidAmount = max($expectedTotal - $paidAmount, 0);
+
+        // List of campers
         $campers = FestiveCampRegistration::with('user')
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -185,14 +289,58 @@ class FestiveCampController extends Controller
     }
 
     /**
+     * ✅ ADMIN: update amount paid (editable) without approving
+     * Route name: admin.festive-camp.amount
+     * Method: PATCH
+     */
+    public function updateAmount(Request $request, FestiveCampRegistration $registration)
+    {
+        $this->authorizeAdmin();
+
+        $data = $request->validate([
+            'amount_paid' => 'nullable|integer|min:0',
+        ]);
+
+        // If blank, keep null (or keep existing if you prefer)
+        // Here: blank sets null
+        $registration->amount_paid = $data['amount_paid'] ?? null;
+        $registration->save();
+
+        return back()->with('success', 'Amount paid updated for ' . $registration->player_name . '.');
+    }
+
+    /**
      * ADMIN: approve a registration (marks as PAID in receipt)
+     * - amount_paid is editable (admin only)
      */
     public function approve(FestiveCampRegistration $registration, Request $request)
     {
+        $this->authorizeAdmin();
+
+        $defaultFee = 50000;
+
+        // Admin can set amount_paid, otherwise default
+        $amountPaid = $request->input('amount_paid');
+
+        if ($amountPaid === null || $amountPaid === '') {
+            $amountPaid = $defaultFee;
+        } else {
+            $amountPaid = (int) preg_replace('/[^0-9]/', '', (string) $amountPaid);
+            if ($amountPaid <= 0) {
+                $amountPaid = $defaultFee;
+            }
+        }
+
         $registration->status = 'approved';
+        $registration->amount_paid = $amountPaid;
+
+        if (empty($registration->verification_token)) {
+            $registration->verification_token = Str::uuid()->toString();
+        }
+
         $registration->save();
 
-        // ✅ WhatsApp receipt link to parent
+        // WhatsApp receipt link to parent
         $this->whatsApp->sendApprovalReceipt($registration);
 
         return back()->with(
