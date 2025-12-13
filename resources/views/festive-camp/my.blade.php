@@ -140,7 +140,7 @@
                                     To confirm this spot, please pay
                                     <span class="font-semibold text-slate-900 dark:text-slate-100">50,000 RWF</span>
                                     to MoMo
-                                    <span class="font-mono">07885448596</span>.
+                                    <span class="font-mono">0788448596</span>.
                                     The admin will mark the status as <strong>approved</strong> after confirming payment.
                                 </p>
                             @endif

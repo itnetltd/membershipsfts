@@ -194,7 +194,7 @@
                                     @else
                                         Status: <span class="font-semibold text-amber-700">Pending confirmation</span>.
                                         Please ensure payment of {{ number_format($campFee, 0, ',', ' ') }} RWF to MoMo
-                                        <span class="font-mono">07885448596</span>.
+                                        <span class="font-mono">0788448596</span>.
                                     @endif
                                 </div>
                             </div>

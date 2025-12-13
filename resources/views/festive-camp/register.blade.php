@@ -187,7 +187,7 @@
                         </h4>
                         <p class="text-xs text-slate-600 mb-3">
                             Camp fee is <span class="font-semibold text-slate-900">50,000 RWF</span>.
-                            Please pay to <span class="font-mono text-slate-900">MoMo 07885448596</span>.
+                            Please pay to <span class="font-mono text-slate-900">MoMo 0788448596</span>.
                             After payment, fill in the phone number and reference used so we can confirm and approve your spot.
                         </p>
 
